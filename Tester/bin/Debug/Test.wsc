@@ -1,0 +1,92 @@
+<?xml version="1.0" ?>
+<?component error="false" debug="false" ?>
+<package>
+
+  <component id="ProductDetail">
+	<registration progid="COMInteraction.TestControl" description="Test WSC" version="1" />
+
+	<public>
+
+		<property name="InterfaceVersion" />
+
+		<property name="Request" />
+		<property name="Response" />
+		<property name="Server" />
+		<property name="Session" />
+		<property name="Application" />
+		<property name="Config" />
+		<property name="Cache" />
+		<property name="DMSCache" />
+
+		<property name="Page" />
+		<property name="PlaceHolder" />
+		<property name="Context" />
+		<property name="Params" />
+		<method name="Init" />
+		<method name="Load" />
+		<method name="PreRender" />
+		<method name="GetRenderDependencies" />
+		<method name="Render">
+			<parameter name="pO" />
+		</method>
+		<method name="RenderPartial">
+			<parameter name="pO" />
+		</method>
+		<method name="Dispose" />
+		<method name="GetOutputCacheType" />
+
+	</public>
+
+	<script language="VBScript">
+	<![CDATA[
+
+		Option Explicit
+
+		Dim InterfaceVersion
+		Dim Request, Response, Server, Session, Application, Config, Cache, DMSCache
+		Dim Page, PlaceHolder, Context, Params
+
+		InterfaceVersion = 1
+		Set Application = new WTF
+    
+		Class WTF
+			Public Property Get Name
+				Name = "sldkhjldjk"
+			End Property
+		End Class
+
+		Public Function Init()
+			Init = "InitRetVal"
+		End Function
+
+		Public Function Load()
+		End Function
+
+		Public Function PreRender()
+		End Function
+
+		Public Function GetRenderDependencies()
+			GetRenderDependencies = "Common"
+		End Function
+
+		Public Function Render(ByVal pO)
+			pO.Write "Whoop!"
+			Render = "Test: " & TypeName(pO)
+		End Function
+
+		Public Function RenderPartial(ByVal pO)
+		End Function
+
+		Public Function Dispose()
+		End Function
+
+		Public Function GetOutputCacheType()
+			GetOutputCacheType = 1
+		End Function
+
+	]]>
+	</script>
+
+  </component>
+
+</package>
