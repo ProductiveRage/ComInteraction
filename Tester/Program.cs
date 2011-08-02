@@ -16,7 +16,7 @@ namespace Tester
                 InterfaceApplierFactory.ComVisibility.Visible
             );
 
-            var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IETWPControl>(
+            var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IControl>(
                 new CachedReadValueConverter(interfaceApplierFactory)
             );
             var obj = (new COMObjectLoader()).LoadFromScriptFile(
