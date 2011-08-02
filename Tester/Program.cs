@@ -24,22 +24,12 @@ namespace Tester
             );
 
             var objWrapped = interfaceApplier.Apply(obj);
-
-            var app = objWrapped.Application;
-            var appName = app.Name;
-
-            Console.WriteLine(objWrapped.Application.Name);
-
-            var version = objWrapped.InterfaceVersion;
+            Console.WriteLine("Application.Name: " + objWrapped.Application.Name);
+            Console.WriteLine("InterfaceVersion: " + objWrapped.InterfaceVersion);
             objWrapped.Init();
-            objWrapped.Load();
-            objWrapped.PreRender();
-            var dependencies = objWrapped.GetRenderDependencies();
-            var outputCacheType = objWrapped.GetOutputCacheType();
-            var outputRender = new COMOutputWriter();
-            objWrapped.Render(outputRender);
-            var outputRenderPartial = new COMOutputWriter();
-            objWrapped.RenderPartial(outputRenderPartial);
+            Console.WriteLine(objWrapped.GetRenderDependencies());
+            var writer = new COMOutputWriter();
+            objWrapped.Render(writer);
             objWrapped.Dispose();
         }
     }
