@@ -2,7 +2,7 @@
 
 namespace Tester
 {
-    public interface IETWPControl
+    public interface IControl
     {
         Int16 InterfaceVersion { get; }
 

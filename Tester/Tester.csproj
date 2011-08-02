@@ -40,7 +40,7 @@
   <ItemGroup>
     <Compile Include="COMOutputWriter.cs" />
     <Compile Include="IApplication.cs" />
-    <Compile Include="IETWPControl.cs" />
+    <Compile Include="IControl.cs" />
     <Compile Include="IOutputWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
