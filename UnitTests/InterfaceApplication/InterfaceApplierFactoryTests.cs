@@ -1,6 +1,7 @@
 ﻿using System;
-using COMInteraction;
+using System.Reflection;
 using COMInteraction.InterfaceApplication;
+using COMInteraction.InterfaceApplication.ReadValueConverters;
 using UnitTests.InterfaceApplication.Helpers;
 using Xunit;
 
@@ -93,6 +94,30 @@ namespace UnitTests.InterfaceApplication
             {
                 Console.WriteLine(srcWrapped.Age);
             });
+        }
+
+        [Fact]
+        public void RetrieveInt16ValueAsInt32_UsingReadValueConverter()
+        {
+            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IAgedInt32ReadOnly>(
+                new ToInt32PropertyReadValueConverter()
+            );
+            var src = new ReadOnlyAgedInt16Class1(29);
+            var srcWrapped = interfaceApplier.Apply(src);
+            Assert.Equal(29, srcWrapped.Age);
+        }
+
+        private class ToInt32PropertyReadValueConverter : IReadValueConverter
+        {
+            public object Convert(PropertyInfo property, object value)
+            {
+                return System.Convert.ToInt32(value);
+            }
+            public object Convert(MethodInfo method, object value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         // ================================================================================================================================

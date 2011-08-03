@@ -5,6 +5,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Threading;
 using COMInteraction.InterfaceApplication.ReadValueConverters;
+using COMInteraction.Misc;
 
 namespace COMInteraction.InterfaceApplication
 {
@@ -113,14 +114,44 @@ namespace COMInteraction.InterfaceApplication
             // ================================================================================================
             // Ensure we account for any interfaces that the target interface implements (recursively)
             // ================================================================================================
-            var interfaces = new List<Type>();
-            buildInterfaceInheritanceList(typeof(T), interfaces);
+            var interfaces = (new InterfaceHierarchyCombiner(typeof(T))).Interfaces;
 
             // ================================================================================================
-            // Constructor and private "src" and "readValueConverter" fields
+            // Declare private "src" and "readValueConverter" fields
             // ================================================================================================
             var srcField = typeBuilder.DefineField("_src", typeof(object), FieldAttributes.Private);
             var readValueConverterField = typeBuilder.DefineField("_readValueConverter", typeof(IReadValueConverter), FieldAttributes.Private);
+
+            // ================================================================================================
+            // Generate the constructor, properties and methods (fields can't be declared on interfaces)
+            // ================================================================================================
+            generateConstructor(typeBuilder, srcField, readValueConverterField);
+            generateProperties<T>(typeBuilder, srcField, readValueConverterField, interfaces);
+            generateMethods<T>(typeBuilder, srcField, readValueConverterField, interfaces);
+
+            // ================================================================================================
+            // Return a new InterfaceApplier references
+            // ================================================================================================
+            return new InterfaceApplier<T>(
+                src => (T)Activator.CreateInstance(
+                    typeBuilder.CreateType(),
+                    src,
+                    readValueConverter
+                )
+            );
+        }
+
+        private static void generateConstructor(TypeBuilder typeBuilder, FieldBuilder srcField, FieldBuilder readValueConverterField)
+        {
+            if (typeBuilder == null)
+                throw new ArgumentNullException("typeBuilder");
+            if (srcField == null)
+                throw new ArgumentNullException("srcField");
+            if (readValueConverterField == null)
+                throw new ArgumentNullException("readValueConverterField");
+            if (!typeof(IReadValueConverter).IsAssignableFrom(readValueConverterField.FieldType))
+                throw new ArgumentException("readValueConverterField must be assignable to IReadValueConverter");
+
             var ctorBuilder = typeBuilder.DefineConstructor(
                 MethodAttributes.Public,
                 CallingConventions.Standard,
@@ -166,13 +197,26 @@ namespace COMInteraction.InterfaceApplication
 
             // All done
             ilCtor.Emit(OpCodes.Ret);
+        }
 
-            // ================================================================================================
-            // Properties (since we're only dealing with interfaces, we need only conside the CanRead and
-            // CanWrite values on the properties, nothing more complicated)
-            // ================================================================================================
-            // There could be multiple properties defined with different types if they appear in multiple interfaces, this doesn't actually cause
-            // any problems so we won't bother doing any work to prevent it happening
+        private static void generateProperties<T>(TypeBuilder typeBuilder, FieldBuilder srcField, FieldBuilder readValueConverterField, NonNullImmutableList<Type> interfaces)
+        {
+            if (!typeof(T).IsInterface)
+                throw new ArgumentException("typeparam must be an interface type", "targetInterface");
+            if (typeBuilder == null)
+                throw new ArgumentNullException("typeBuilder");
+            if (srcField == null)
+                throw new ArgumentNullException("srcField");
+            if (readValueConverterField == null)
+                throw new ArgumentNullException("readValueConverterField");
+            if (!typeof(IReadValueConverter).IsAssignableFrom(readValueConverterField.FieldType))
+                throw new ArgumentException("readValueConverterField must be assignable to IReadValueConverter");
+            if (interfaces == null)
+                throw new ArgumentNullException("interfaces");
+
+            // Since we're only dealing with interfaces, we need only conside the CanRead and CanWrite values on the properties, nothing more complicated)
+            // - There could be multiple properties defined with different types if they appear in multiple interfaces, this doesn't actually cause any
+            //   problems so we won't bother doing any work to prevent it happening
             var properties = new List<PropertyInfo>();
             foreach (var entry in interfaces)
                 properties.AddRange(entry.GetProperties());
@@ -214,7 +258,7 @@ namespace COMInteraction.InterfaceApplication
                     //  this._src.GetType().InvokeMember(property.Name, BindingFlags.GetProperty, null, _src, null)
                     // );
                     var ilGetFunc = getFuncBuilder.GetILGenerator();
-                    
+
                     ilGetFunc.Emit(OpCodes.Ldarg_0);
                     ilGetFunc.Emit(OpCodes.Ldfld, readValueConverterField);
                     ilGetFunc.Emit(OpCodes.Ldtoken, typeof(T));
@@ -279,10 +323,23 @@ namespace COMInteraction.InterfaceApplication
                     propBuilder.SetSetMethod(setFuncBuilder);
                 }
             }
+        }
 
-            // ================================================================================================
-            // Functions
-            // ================================================================================================
+        private static void generateMethods<T>(TypeBuilder typeBuilder, FieldBuilder srcField, FieldBuilder readValueConverterField, NonNullImmutableList<Type> interfaces)
+        {
+            if (!typeof(T).IsInterface)
+                throw new ArgumentException("typeparam must be an interface type", "targetInterface");
+            if (typeBuilder == null)
+                throw new ArgumentNullException("typeBuilder");
+            if (srcField == null)
+                throw new ArgumentNullException("srcField");
+            if (readValueConverterField == null)
+                throw new ArgumentNullException("readValueConverterField");
+            if (!typeof(IReadValueConverter).IsAssignableFrom(readValueConverterField.FieldType))
+                throw new ArgumentException("readValueConverterField must be assignable to IReadValueConverter");
+            if (interfaces == null)
+                throw new ArgumentNullException("interfaces");
+
             // There could be multiple methods defined with the same signature if they appear in multiple interfaces, this doesn't actually cause
             // any problems so we won't bother doing any work to prevent it happening
             // - While enumerating methods to implement, the get/set methods related to properties will be picked up here and duplicated, but
@@ -312,10 +369,10 @@ namespace COMInteraction.InterfaceApplication
                     parameterTypes.ToArray()
                 );
                 var ilFunc = funcBuilder.GetILGenerator();
-                
+
                 // Generate: object[] args
                 var argValues = ilFunc.DeclareLocal(typeof(object[]));
-                
+
                 // Generate: args = new object[x]
                 ilFunc.Emit(OpCodes.Ldc_I4, parameters.Length);
                 ilFunc.Emit(OpCodes.Newarr, typeof(Object));
@@ -397,41 +454,13 @@ namespace COMInteraction.InterfaceApplication
                     ilFunc.Emit(OpCodes.Pop);
                 else if (method.ReturnType.IsValueType)
                     ilFunc.Emit(OpCodes.Unbox_Any, method.ReturnType);
-                
-                ilFunc.Emit(OpCodes.Ret);
-            }
-            
-            return new InterfaceApplier<T>(
-                src => (T)Activator.CreateInstance(
-                    typeBuilder.CreateType(),
-                    src,
-                    readValueConverter
-                )
-            );
-        }
 
-        private void buildInterfaceInheritanceList(Type targetInterface, List<Type> types)
-        {
-            if (targetInterface == null)
-                throw new ArgumentNullException("targetInterface");
-            if (!targetInterface.IsInterface)
-                throw new ArgumentException("targetInterface must be an interface type", "targetInterface");
-            if (types == null)
-                throw new ArgumentNullException("types");
-            if (!types.Contains(targetInterface))
-                types.Add(targetInterface);
-            foreach (var inheritedInterface in targetInterface.GetInterfaces())
-            {
-                if (!types.Contains(inheritedInterface))
-                {
-                    types.Add(inheritedInterface);
-                    buildInterfaceInheritanceList(inheritedInterface, types);
-                }
+                ilFunc.Emit(OpCodes.Ret);
             }
         }
 
         // ================================================================================================================================
-        // CHILD CLASSES
+        // IInterfaceApplier IMPLEMENTATION
         // ================================================================================================================================
         private class InterfaceApplier<T> : IInterfaceApplier<T>
         {
@@ -458,35 +487,6 @@ namespace COMInteraction.InterfaceApplication
             object IInterfaceApplier.Apply(object src)
             {
                 return Apply(src);
-            }
-        }
-
-        private sealed class AssemblyType
-        {
-            private string _assemblyName;
-            private Type _targetType;
-            public AssemblyType(string assemblyName, Type targetType)
-            {
-                assemblyName = (assemblyName ?? "").Trim();
-                if (assemblyName == "")
-                    throw new ArgumentException("Null or empty assemblyName specified");
-                if (targetType == null)
-                    throw new ArgumentNullException("targetType");
-                _assemblyName = assemblyName;
-                _targetType = targetType;
-            }
-            public string AssemblyName { get { return _assemblyName; } }
-            public Type TargetType { get { return _targetType; } }
-            public override bool Equals(object obj)
-            {
-                var objAssemblyType = obj as AssemblyType;
-                if (objAssemblyType == null)
-                    return false;
-                return ((objAssemblyType.AssemblyName == this.AssemblyName) && (objAssemblyType.TargetType == this.TargetType));
-            }
-            public override int GetHashCode()
-            {
-                return String.Format("{0}_{1}_{2}", this.GetType().ToString(), this.TargetType.ToString(), this.AssemblyName).GetHashCode();
             }
         }
     }
