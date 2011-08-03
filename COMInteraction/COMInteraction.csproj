@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="COMObjectLoader.cs" />
+    <Compile Include="Misc\InterfaceHierarchyCombiner.cs" />
     <Compile Include="Misc\NonNullImmutableList.cs" />
     <Compile Include="InterfaceApplication\ReadValueConverters\CachedReadValueConverter.cs" />
     <Compile Include="InterfaceApplication\IInterfaceApplier.cs" />
