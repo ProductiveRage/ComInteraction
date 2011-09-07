@@ -254,14 +254,14 @@ namespace COMInteraction.InterfaceApplication
                     );
 
                     // Generate: return this._readValueConverter.ConvertPropertyValue(
-                    //  typeof(T).GetProperty(property.Name)
+                    //  property.DeclaringType.GetProperty(property.Name)
                     //  this._src.GetType().InvokeMember(property.Name, BindingFlags.GetProperty, null, _src, null)
                     // );
                     var ilGetFunc = getFuncBuilder.GetILGenerator();
 
                     ilGetFunc.Emit(OpCodes.Ldarg_0);
                     ilGetFunc.Emit(OpCodes.Ldfld, readValueConverterField);
-                    ilGetFunc.Emit(OpCodes.Ldtoken, typeof(T));
+                    ilGetFunc.Emit(OpCodes.Ldtoken, property.DeclaringType);
                     ilGetFunc.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
                     ilGetFunc.Emit(OpCodes.Ldstr, property.Name);
                     ilGetFunc.Emit(OpCodes.Call, typeof(Type).GetMethod("GetProperty", new[] { typeof(string) }));
@@ -392,8 +392,8 @@ namespace COMInteraction.InterfaceApplication
                 // Generate one of either:
                 // 1. _src.GetType().InvokeMember(method.Name, BindingFlags.InvokeMethod, null, _src, args);
                 // 2. return this._readValueConverter.ConvertPropertyValue(
-                //  typeof(T).GetMethod(method.Name, {MethodArgTypes})
-                //  this._src.GetType().InvokeMember(property.Name, BindingFlags.GetProperty, null, _src, null)
+                //  method.DeclaringType.GetMethod(method.Name, {MethodArgTypes})
+                //  this._src.GetType().InvokeMember(property.Name, BindingFlags.InvokeMethod, null, _src, null)
                 // );
                 var methodInfoInvokeMember = typeof(Type).GetMethod(
                     "InvokeMember",
@@ -429,7 +429,7 @@ namespace COMInteraction.InterfaceApplication
                     // Will call readValueConverter.Convert, passing MethodInfo reference before value
                     ilFunc.Emit(OpCodes.Ldarg_0);
                     ilFunc.Emit(OpCodes.Ldfld, readValueConverterField);
-                    ilFunc.Emit(OpCodes.Ldtoken, typeof(T));
+                    ilFunc.Emit(OpCodes.Ldtoken, method.DeclaringType);
                     ilFunc.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
                     ilFunc.Emit(OpCodes.Ldstr, method.Name);
                     ilFunc.Emit(OpCodes.Ldloc_1);
