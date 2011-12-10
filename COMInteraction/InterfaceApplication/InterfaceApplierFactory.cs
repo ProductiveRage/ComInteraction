@@ -253,7 +253,7 @@ namespace COMInteraction.InterfaceApplication
                         Type.EmptyTypes
                     );
 
-                    // Generate: return this._readValueConverter.ConvertPropertyValue(
+                    // Generate: return this._readValueConverter.Convert(
                     //  property.DeclaringType.GetProperty(property.Name)
                     //  this._src.GetType().InvokeMember(property.Name, BindingFlags.GetProperty, null, _src, null)
                     // );
@@ -391,7 +391,7 @@ namespace COMInteraction.InterfaceApplication
 
                 // Generate one of either:
                 // 1. _src.GetType().InvokeMember(method.Name, BindingFlags.InvokeMethod, null, _src, args);
-                // 2. return this._readValueConverter.ConvertPropertyValue(
+                // 2. return this._readValueConverter.Convert(
                 //  method.DeclaringType.GetMethod(method.Name, {MethodArgTypes})
                 //  this._src.GetType().InvokeMember(property.Name, BindingFlags.InvokeMethod, null, _src, null)
                 // );
@@ -422,7 +422,7 @@ namespace COMInteraction.InterfaceApplication
                         var parameter = parameters[index];
                         ilFunc.Emit(OpCodes.Ldloc_1);
                         ilFunc.Emit(OpCodes.Ldc_I4, index);
-                        ilFunc.Emit(OpCodes.Ldtoken, parameters[index].GetType());
+                        ilFunc.Emit(OpCodes.Ldtoken, parameters[index].ParameterType);
                         ilFunc.Emit(OpCodes.Stelem_Ref);
                     }
 
