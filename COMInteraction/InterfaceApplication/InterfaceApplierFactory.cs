@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
@@ -217,11 +218,7 @@ namespace COMInteraction.InterfaceApplication
             // Since we're only dealing with interfaces, we need only conside the CanRead and CanWrite values on the properties, nothing more complicated)
             // - There could be multiple properties defined with different types if they appear in multiple interfaces, this doesn't actually cause any
             //   problems so we won't bother doing any work to prevent it happening
-            var properties = new List<PropertyInfo>();
-            foreach (var entry in interfaces)
-                properties.AddRange(entry.GetProperties());
-
-            foreach (var property in properties)
+            foreach (var property in interfaces.SelectMany(i => i.GetProperties()))
             {
                 var methodInfoInvokeMember = typeof(Type).GetMethod(
                     "InvokeMember",
@@ -344,11 +341,7 @@ namespace COMInteraction.InterfaceApplication
             // any problems so we won't bother doing any work to prevent it happening
             // - While enumerating methods to implement, the get/set methods related to properties will be picked up here and duplicated, but
             //   this also doesn't cause any ill effects so no work is done to prevent it
-            var methods = new List<MethodInfo>();
-            foreach (var entry in interfaces)
-                methods.AddRange(entry.GetMethods());
-
-            foreach (var method in methods)
+            foreach (var method in interfaces.SelectMany(i => i.GetMethods()))
             {
                 var parameters = method.GetParameters();
                 var parameterTypes = new List<Type>();
