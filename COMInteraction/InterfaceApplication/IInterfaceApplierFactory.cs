@@ -3,7 +3,7 @@ using COMInteraction.InterfaceApplication.ReadValueConverters;
 
 namespace COMInteraction.InterfaceApplication
 {
-    interface IInterfaceApplierFactory
+    public interface IInterfaceApplierFactory
     {
         /// <summary>
         /// Try to generate an InterfaceApplier for the specified interface (the typeparam MUST be an interface, not a class)

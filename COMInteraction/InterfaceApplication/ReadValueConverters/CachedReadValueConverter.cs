@@ -15,11 +15,11 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
     {
         private NonNullImmutableList<Type> _callChain;
         private NonNullImmutableList<IInterfaceApplier> _interfaceAppliers;
-        private volatile InterfaceApplierFactory _interfaceApplierFactory; // Must be volatile for double-checked locking pattern
+        private volatile IInterfaceApplierFactory _interfaceApplierFactory; // Must be volatile for double-checked locking pattern
         private object _writeLock;
 
-        public CachedReadValueConverter(InterfaceApplierFactory interfaceApplierFactory) : this(interfaceApplierFactory, new NonNullImmutableList<Type>()) { }
-        private CachedReadValueConverter(InterfaceApplierFactory interfaceApplierFactory, NonNullImmutableList<Type> callChain)
+        public CachedReadValueConverter(IInterfaceApplierFactory interfaceApplierFactory) : this(interfaceApplierFactory, new NonNullImmutableList<Type>()) { }
+        private CachedReadValueConverter(IInterfaceApplierFactory interfaceApplierFactory, NonNullImmutableList<Type> callChain)
         {
             if (interfaceApplierFactory == null)
                 throw new ArgumentNullException("interfaceApplierFactory");
