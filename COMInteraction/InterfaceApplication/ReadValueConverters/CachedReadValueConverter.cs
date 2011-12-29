@@ -55,6 +55,9 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
                 throw new ArgumentNullException("targetType");
             
             // If no conversion is required, no work to do
+            // - Note: We can only deal with applying interfaces to objects so if a conversion is required where the target is not an interface
+            //   then there's nothing we can do here, we'll have to return the value unconverted (likewise, if the target type is an int but
+            //   the current value is null, although this is obviously incorrect there's nothing we can do about it here)
             if (!targetType.IsInterface || (value == null) || (value.GetType().IsSubclassOf(targetType)))
                 return value;
 
