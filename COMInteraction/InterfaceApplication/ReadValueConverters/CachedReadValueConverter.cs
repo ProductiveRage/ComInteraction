@@ -14,8 +14,8 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
     public class CachedReadValueConverter : IReadValueConverter
     {
         private NonNullImmutableList<Type> _callChain;
+        private IInterfaceApplierFactory _interfaceApplierFactory;
         private NonNullImmutableList<IInterfaceApplier> _interfaceAppliers;
-        private volatile IInterfaceApplierFactory _interfaceApplierFactory; // Must be volatile for double-checked locking pattern
         private object _writeLock;
 
         public CachedReadValueConverter(IInterfaceApplierFactory interfaceApplierFactory) : this(interfaceApplierFactory, new NonNullImmutableList<Type>()) { }
@@ -23,6 +23,7 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
         {
             if (interfaceApplierFactory == null)
                 throw new ArgumentNullException("interfaceApplierFactory");
+
             _interfaceApplierFactory = interfaceApplierFactory;
             _interfaceAppliers = new NonNullImmutableList<IInterfaceApplier>();
             _callChain = callChain;
@@ -59,9 +60,9 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
                 return value;
 
             // Do we already have an interface applier available for this type?
-            var interfaceApplier = tryToGetInterfaceApplier(targetType);
-            if (interfaceApplier != null)
-                return interfaceApplier.Apply(value);
+            var interfaceApplierExisting = _interfaceAppliers.FirstOrDefault(i => i.TargetType.Equals(targetType));
+            if (interfaceApplierExisting != null)
+                return interfaceApplierExisting.Apply(value);
                 
             // If not, we'll need to try to initialise one
             // - Before doing so, look up through the call chain and ensure that we're not already in the process of trying to wrap
@@ -71,31 +72,18 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
             if (_callChain.Contains(targetType))
                 throw new Exception("Infinite target reference exception for type " + targetType.ToString());
 
-            // Try to generate new interface applier - add current type to the callchain of new TestReadValueConverter so that the
+            // Try to generate new interface applier - add current type to the callchain of new CachedReadValueConverter so that the
             // above infinite-loop check can be performed
-            interfaceApplier = _interfaceApplierFactory.GenerateInterfaceApplier(
+            var interfaceApplierNew = _interfaceApplierFactory.GenerateInterfaceApplier(
                 targetType,
                 new CachedReadValueConverter(_interfaceApplierFactory, _callChain.Add(targetType))
             );
-            if (tryToGetInterfaceApplier(targetType) == null) // Double-checked locking (try to prevent unnecessary locks)
+            lock (_writeLock)
             {
-                lock (_writeLock)
-                {
-                    if (tryToGetInterfaceApplier(targetType) == null)
-                        _interfaceAppliers = _interfaceAppliers.Add(interfaceApplier);
-                }
+                if (!_interfaceAppliers.Any(i => i.TargetType.Equals(targetType)))
+                    _interfaceAppliers = _interfaceAppliers.Add(interfaceApplierNew);
             }
-            return interfaceApplier.Apply(value);
-        }
-
-        /// <summary>
-        /// This will return null if no interface applier is available for this class instance
-        /// </summary>
-        private IInterfaceApplier tryToGetInterfaceApplier(Type targetType)
-        {
-            if (targetType == null)
-                throw new ArgumentNullException("targetType");
-            return _interfaceAppliers.FirstOrDefault(i => i.TargetType.Equals(targetType));
+            return interfaceApplierNew.Apply(value);
         }
     }
 }
