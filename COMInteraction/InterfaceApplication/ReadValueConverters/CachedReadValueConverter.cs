@@ -13,20 +13,17 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
     /// </summary>
     public class CachedReadValueConverter : IReadValueConverter
     {
-        private NonNullImmutableList<Type> _callChain;
         private IInterfaceApplierFactory _interfaceApplierFactory;
         private NonNullImmutableList<IInterfaceApplier> _interfaceAppliers;
         private object _writeLock;
 
-        public CachedReadValueConverter(IInterfaceApplierFactory interfaceApplierFactory) : this(interfaceApplierFactory, new NonNullImmutableList<Type>()) { }
-        private CachedReadValueConverter(IInterfaceApplierFactory interfaceApplierFactory, NonNullImmutableList<Type> callChain)
+        public CachedReadValueConverter(IInterfaceApplierFactory interfaceApplierFactory)
         {
             if (interfaceApplierFactory == null)
                 throw new ArgumentNullException("interfaceApplierFactory");
 
             _interfaceApplierFactory = interfaceApplierFactory;
             _interfaceAppliers = new NonNullImmutableList<IInterfaceApplier>();
-            _callChain = callChain;
             _writeLock = new object();
         }
 
@@ -37,6 +34,7 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
         {
             if (property == null)
                 throw new ArgumentNullException("property");
+
             return tryToConvertValueIfRequired(property.PropertyType, value);
         }
 
@@ -47,6 +45,7 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
         {
             if (method == null)
                 throw new ArgumentNullException("method");
+
             return tryToConvertValueIfRequired(method.ReturnType, value);
         }
 
@@ -64,19 +63,10 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
             if (interfaceApplierExisting != null)
                 return interfaceApplierExisting.Apply(value);
                 
-            // If not, we'll need to try to initialise one
-            // - Before doing so, look up through the call chain and ensure that we're not already in the process of trying to wrap
-            //   a reference to this type, if we are then we'll end up in an infinite loop which we need to prevent
-            //    eg. If IContainer has a property with type IContainer then this would go round and round trying to get an interface
-            //        applier to IContainer until it ran out of stack space
-            if (_callChain.Contains(targetType))
-                throw new Exception("Infinite target reference exception for type " + targetType.ToString());
-
-            // Try to generate new interface applier - add current type to the callchain of new CachedReadValueConverter so that the
-            // above infinite-loop check can be performed
+            // Try to generate new interface applier
             var interfaceApplierNew = _interfaceApplierFactory.GenerateInterfaceApplier(
                 targetType,
-                new CachedReadValueConverter(_interfaceApplierFactory, _callChain.Add(targetType))
+                new CachedReadValueConverter(_interfaceApplierFactory)
             );
             lock (_writeLock)
             {
