@@ -67,10 +67,7 @@ namespace COMInteraction.InterfaceApplication.ReadValueConverters
                 return interfaceApplierExisting.Apply(value);
                 
             // Try to generate new interface applier
-            var interfaceApplierNew = _interfaceApplierFactory.GenerateInterfaceApplier(
-                targetType,
-                new CachedReadValueConverter(_interfaceApplierFactory)
-            );
+            var interfaceApplierNew = _interfaceApplierFactory.GenerateInterfaceApplier(targetType, this);
             lock (_writeLock)
             {
                 if (!_interfaceAppliers.Any(i => i.TargetType.Equals(targetType)))
