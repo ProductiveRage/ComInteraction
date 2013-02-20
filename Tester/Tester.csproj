@@ -39,6 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="COMOutputWriter.cs" />
+    <Compile Include="IEmployee.cs" />
+    <Compile Include="IRole.cs" />
     <Compile Include="IApplication.cs" />
     <Compile Include="IControl.cs" />
     <Compile Include="IOutputWriter.cs" />
