@@ -377,7 +377,7 @@ namespace COMInteraction.InterfaceApplication
                 // 1. _src.GetType().InvokeMember(method.Name, BindingFlags.InvokeMethod, null, _src, args);
                 // 2. return this._readValueConverter.Convert(
                 //  method.DeclaringType.GetMethod(method.Name, {MethodArgTypes})
-                //  this._src.GetType().InvokeMember(property.Name, BindingFlags.InvokeMethod, null, _src, null)
+                //  this._src.GetType().InvokeMember(method.Name, BindingFlags.InvokeMethod, null, _src, args)
                 // );
                 var methodInfoInvokeMember = typeof(Type).GetMethod(
                     "InvokeMember",
