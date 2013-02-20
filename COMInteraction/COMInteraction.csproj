@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="COMObjectLoader.cs" />
     <Compile Include="InterfaceApplication\ComVisibilityOptions.cs" />
+    <Compile Include="InterfaceApplication\DispatchInterfaceApplierFactory.cs" />
+    <Compile Include="InterfaceApplication\IDispatchAccess.cs" />
     <Compile Include="Misc\DelayedExecutor.cs" />
     <Compile Include="Misc\InterfaceHierarchyCombiner.cs" />
     <Compile Include="Misc\NonNullImmutableList.cs" />
