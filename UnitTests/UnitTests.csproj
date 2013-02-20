@@ -38,7 +38,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InterfaceApplication\InterfaceApplierFactoryTests.cs" />
+    <Compile Include="InterfaceApplication\ReflectionInterfaceApplierFactoryTests.cs" />
     <Compile Include="InterfaceApplication\Helpers\ActionlessReadValueConverter.cs" />
     <Compile Include="InterfaceApplication\ReadValueConverters\CachedReadValueConverterIntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
