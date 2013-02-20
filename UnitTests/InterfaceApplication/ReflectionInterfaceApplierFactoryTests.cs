@@ -7,7 +7,7 @@ using Xunit;
 
 namespace UnitTests.InterfaceApplication
 {
-    public class InterfaceApplierFactoryTests
+    public class ReflectionInterfaceApplierFactoryTests
     {
         // ================================================================================================================================
         // TESTS: String Properties
