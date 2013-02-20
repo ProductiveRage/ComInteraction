@@ -24,7 +24,7 @@ namespace COMInteraction.InterfaceApplication
         // ================================================================================================================================
         private string _assemblyName;
         private bool _createComVisibleClasses;
-        private Lazy<ModuleBuilder> _moduleBuilder;
+		private DelayedExecutor<ModuleBuilder> _moduleBuilder;
         public InterfaceApplierFactory(string assemblyName, ComVisibility comVisibilityOfClasses)
         {
             assemblyName = (assemblyName ?? "").Trim();
@@ -35,7 +35,7 @@ namespace COMInteraction.InterfaceApplication
             
             _assemblyName = assemblyName;
             _createComVisibleClasses = (comVisibilityOfClasses == ComVisibility.Visible);
-            _moduleBuilder = new Lazy<ModuleBuilder>(
+			_moduleBuilder = new DelayedExecutor<ModuleBuilder>(
                 () =>
                 {
                     var assemblyBuilder = Thread.GetDomain().DefineDynamicAssembly(
@@ -46,8 +46,7 @@ namespace COMInteraction.InterfaceApplication
                         assemblyBuilder.GetName().Name,
                         false
                     );
-                },
-                true // isThreadSafe
+                }
             );
         }
 

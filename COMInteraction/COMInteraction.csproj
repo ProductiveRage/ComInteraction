@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>COMInteraction</RootNamespace>
     <AssemblyName>COMInteraction</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
@@ -54,10 +54,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="COMObjectLoader.cs" />
+    <Compile Include="Misc\DelayedExecutor.cs" />
     <Compile Include="Misc\InterfaceHierarchyCombiner.cs" />
     <Compile Include="Misc\NonNullImmutableList.cs" />
     <Compile Include="InterfaceApplication\ReadValueConverters\CachedReadValueConverter.cs" />
