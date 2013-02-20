@@ -116,9 +116,10 @@ namespace COMInteraction.InterfaceApplication
 
             // ================================================================================================
             // Generate the constructor, properties and methods (fields can't be declared on interfaces)
+			// - We won't explicitly generate properties since "get_" and "set_" methods should be present on
+			//   .Net classes which will be used automatically
             // ================================================================================================
             generateConstructor(typeBuilder, srcField, readValueConverterField);
-            generateProperties<T>(typeBuilder, srcField, readValueConverterField, interfaces);
             generateMethods<T>(typeBuilder, srcField, readValueConverterField, interfaces);
 
             // ================================================================================================
@@ -191,128 +192,6 @@ namespace COMInteraction.InterfaceApplication
             ilCtor.Emit(OpCodes.Ret);
         }
 
-        private static void generateProperties<T>(TypeBuilder typeBuilder, FieldBuilder srcField, FieldBuilder readValueConverterField, NonNullImmutableList<Type> interfaces)
-        {
-            if (!typeof(T).IsInterface)
-                throw new ArgumentException("typeparam must be an interface type", "targetInterface");
-            if (typeBuilder == null)
-                throw new ArgumentNullException("typeBuilder");
-            if (srcField == null)
-                throw new ArgumentNullException("srcField");
-            if (readValueConverterField == null)
-                throw new ArgumentNullException("readValueConverterField");
-            if (!typeof(IReadValueConverter).IsAssignableFrom(readValueConverterField.FieldType))
-                throw new ArgumentException("readValueConverterField must be assignable to IReadValueConverter");
-            if (interfaces == null)
-                throw new ArgumentNullException("interfaces");
-
-            // Since we're only dealing with interfaces, we need only conside the CanRead and CanWrite values on the properties, nothing more complicated)
-            // - There could be multiple properties defined with different types if they appear in multiple interfaces, this doesn't actually cause any
-            //   problems so we won't bother doing any work to prevent it happening
-            foreach (var property in interfaces.SelectMany(i => i.GetProperties()))
-            {
-                var methodInfoInvokeMember = typeof(Type).GetMethod(
-                    "InvokeMember",
-                    new[]
-                    {
-                        typeof(string),
-                        typeof(BindingFlags),
-                        typeof(Binder),
-                        typeof(object),
-                        typeof(object[])
-                    }
-                );
-
-                // Prepare the property we'll add get and/or set accessors to
-                var propBuilder = typeBuilder.DefineProperty(
-                    property.Name,
-                    PropertyAttributes.None,
-                    property.PropertyType,
-                    Type.EmptyTypes
-                );
-
-                // Define get method, if required
-                if (property.CanRead)
-                {
-                    var getFuncBuilder = typeBuilder.DefineMethod(
-                        "get_" + property.Name,
-                        MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.SpecialName | MethodAttributes.Virtual | MethodAttributes.Final,
-                        property.PropertyType,
-                        Type.EmptyTypes
-                    );
-
-                    // Generate: return this._readValueConverter.Convert(
-                    //  property.DeclaringType.GetProperty(property.Name)
-                    //  this._src.GetType().InvokeMember(property.Name, BindingFlags.GetProperty, null, _src, null)
-                    // );
-                    var ilGetFunc = getFuncBuilder.GetILGenerator();
-
-                    ilGetFunc.Emit(OpCodes.Ldarg_0);
-                    ilGetFunc.Emit(OpCodes.Ldfld, readValueConverterField);
-                    ilGetFunc.Emit(OpCodes.Ldtoken, property.DeclaringType);
-                    ilGetFunc.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-                    ilGetFunc.Emit(OpCodes.Ldstr, property.Name);
-                    ilGetFunc.Emit(OpCodes.Call, typeof(Type).GetMethod("GetProperty", new[] { typeof(string) }));
-
-                    ilGetFunc.Emit(OpCodes.Ldarg_0);
-                    ilGetFunc.Emit(OpCodes.Ldfld, srcField);
-                    ilGetFunc.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetType", Type.EmptyTypes));
-                    ilGetFunc.Emit(OpCodes.Ldstr, property.Name);
-                    ilGetFunc.Emit(OpCodes.Ldc_I4, (int)BindingFlags.GetProperty);
-                    ilGetFunc.Emit(OpCodes.Ldnull);
-                    ilGetFunc.Emit(OpCodes.Ldarg_0);
-                    ilGetFunc.Emit(OpCodes.Ldfld, srcField);
-                    ilGetFunc.Emit(OpCodes.Ldnull);
-                    ilGetFunc.Emit(OpCodes.Callvirt, methodInfoInvokeMember);
-                    ilGetFunc.Emit(OpCodes.Callvirt, typeof(IReadValueConverter).GetMethod("Convert", new[] { typeof(PropertyInfo), typeof(object) }));
-
-                    if (property.PropertyType.IsValueType)
-                        ilGetFunc.Emit(OpCodes.Unbox_Any, property.PropertyType);
-
-                    ilGetFunc.Emit(OpCodes.Ret);
-                    propBuilder.SetGetMethod(getFuncBuilder);
-                }
-
-                // Define set method, if required
-                if (property.CanWrite)
-                {
-                    var setFuncBuilder = typeBuilder.DefineMethod(
-                        "set_" + property.Name,
-                        MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.Virtual,
-                        null,
-                        new Type[] { property.PropertyType }
-                    );
-                    var valueParameter = setFuncBuilder.DefineParameter(1, ParameterAttributes.None, "value");
-                    var ilSetFunc = setFuncBuilder.GetILGenerator();
-                    // Generate: this._src.GetType().InvokeMember(property.Name, BindingFlags.SetProperty, null, _src, new object[1] { value });
-                    var argValues = ilSetFunc.DeclareLocal(typeof(object[])); // Need to declare assignment of local array to pass to InvokeMember
-                    ilSetFunc.Emit(OpCodes.Ldarg_0);
-                    ilSetFunc.Emit(OpCodes.Ldfld, srcField);
-                    ilSetFunc.Emit(OpCodes.Callvirt, typeof(Type).GetMethod("GetType", Type.EmptyTypes));
-                    ilSetFunc.Emit(OpCodes.Ldstr, property.Name);
-                    ilSetFunc.Emit(OpCodes.Ldc_I4, (int)BindingFlags.SetProperty);
-                    ilSetFunc.Emit(OpCodes.Ldnull);
-                    ilSetFunc.Emit(OpCodes.Ldarg_0);
-                    ilSetFunc.Emit(OpCodes.Ldfld, srcField);
-                    ilSetFunc.Emit(OpCodes.Ldc_I4_1);
-                    ilSetFunc.Emit(OpCodes.Newarr, typeof(Object));
-                    ilSetFunc.Emit(OpCodes.Stloc_0);
-                    ilSetFunc.Emit(OpCodes.Ldloc_0);
-                    ilSetFunc.Emit(OpCodes.Ldc_I4_0);
-                    ilSetFunc.Emit(OpCodes.Ldarg_1);
-                    if (property.PropertyType.IsValueType)
-                        ilSetFunc.Emit(OpCodes.Box, property.PropertyType);
-                    ilSetFunc.Emit(OpCodes.Stelem_Ref);
-                    ilSetFunc.Emit(OpCodes.Ldloc_0);
-                    ilSetFunc.Emit(OpCodes.Callvirt, methodInfoInvokeMember);
-                    ilSetFunc.Emit(OpCodes.Pop);
-
-                    ilSetFunc.Emit(OpCodes.Ret);
-                    propBuilder.SetSetMethod(setFuncBuilder);
-                }
-            }
-        }
-
         private static void generateMethods<T>(TypeBuilder typeBuilder, FieldBuilder srcField, FieldBuilder readValueConverterField, NonNullImmutableList<Type> interfaces)
         {
             if (!typeof(T).IsInterface)
@@ -330,8 +209,8 @@ namespace COMInteraction.InterfaceApplication
 
             // There could be multiple methods defined with the same signature if they appear in multiple interfaces, this doesn't actually cause
             // any problems so we won't bother doing any work to prevent it happening
-            // - While enumerating methods to implement, the get/set methods related to properties will be picked up here and duplicated, but
-            //   this also doesn't cause any ill effects so no work is done to prevent it
+            // - While enumerating methods to implement, the get/set methods related to properties will be picked up here which is all we have
+			//   do to deal with them (we don't have to generate property IL as well)
             foreach (var method in interfaces.SelectMany(i => i.GetMethods()))
             {
                 var parameters = method.GetParameters();
