@@ -57,13 +57,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="COMObjectLoader.cs" />
+    <Compile Include="InterfaceApplication\ComVisibilityOptions.cs" />
     <Compile Include="Misc\DelayedExecutor.cs" />
     <Compile Include="Misc\InterfaceHierarchyCombiner.cs" />
     <Compile Include="Misc\NonNullImmutableList.cs" />
     <Compile Include="InterfaceApplication\ReadValueConverters\CachedReadValueConverter.cs" />
     <Compile Include="InterfaceApplication\IInterfaceApplier.cs" />
     <Compile Include="InterfaceApplication\IInterfaceApplierFactory.cs" />
-    <Compile Include="InterfaceApplication\InterfaceApplierFactory.cs" />
+    <Compile Include="InterfaceApplication\ReflectionInterfaceApplierFactory.cs" />
     <Compile Include="InterfaceApplication\ReadValueConverters\IReadValueConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

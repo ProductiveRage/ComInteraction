@@ -15,7 +15,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveStringProperty_NoInheritance()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<INamedReadOnly>(
                 new ActionlessReadValueConverter()
             );
@@ -27,7 +27,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveStringProperty_PropertyOnInheritedInterface()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IPerson>(
                 new ActionlessReadValueConverter()
             );
@@ -39,7 +39,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveStringPropertyWhenWrappedObjectDoesNotHavePropertyWillFail()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<INamedReadOnly>(
                 new ActionlessReadValueConverter()
             );
@@ -57,7 +57,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveIntProperty_NoInheritance()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IAgedInt32ReadOnly>(
                 new ActionlessReadValueConverter()
             );
@@ -69,7 +69,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveInt32ValueAsInt16PropertyWillFail()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IAgedInt16ReadOnly>(
                 new ActionlessReadValueConverter()
             );
@@ -84,7 +84,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveInt16ValueAsInt32PropertyWillFail()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IAgedInt32ReadOnly>(
                 new ActionlessReadValueConverter()
             );
@@ -99,7 +99,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void RetrieveInt16ValueAsInt32_UsingReadValueConverter()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IAgedInt32ReadOnly>(
                 new ToInt32PropertyReadValueConverter()
             );
@@ -126,7 +126,7 @@ namespace UnitTests.InterfaceApplication
         [Fact]
         public void WrappingToInaccessibleInterfaceWillFail()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory("InterfaceApplierFactoryTests", InterfaceApplierFactory.ComVisibility.NotVisible);
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory("InterfaceApplierFactoryTests", ComVisibilityOptions.NotVisible);
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IPrivateNamedReadOnly>(
                 new ActionlessReadValueConverter()
             );
