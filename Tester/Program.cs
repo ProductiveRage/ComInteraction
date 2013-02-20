@@ -16,7 +16,7 @@ namespace Tester
 
 		private static void DemonstrateIDispatchInterfaceApplication()
 		{
-			var interfaceApplierFactory = new DispatchInterfaceApplierFactory(
+			var interfaceApplierFactory = new IDispatchInterfaceApplierFactory(
 				"DynamicAssembly",
 				ComVisibilityOptions.Visible
 			);
