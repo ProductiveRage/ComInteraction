@@ -15,7 +15,7 @@ namespace COMInteraction.InterfaceApplication
     /// are passed straight through to the wrapped reference using Reflection. If any of the interface's properties or methods are not available on the wrapped reference
     /// then an exception will be thrown when requested. Any interfaces that the target interface implements will be accounted for. This can be used to wrap POCO objects
     /// or COM objects, for example. Note: Only handling interfaces, not classes, means there are less things to consider - there are no protected set methods or fields,
-    /// for example.
+    /// for example. This implementation uses reflection to interact with the source data and so is recommended for use with .Net references.
     /// </summary>
     public class ReflectionInterfaceApplierFactory : IInterfaceApplierFactory
     {
