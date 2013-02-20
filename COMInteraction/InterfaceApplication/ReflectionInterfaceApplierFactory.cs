@@ -17,29 +17,27 @@ namespace COMInteraction.InterfaceApplication
     /// or COM objects, for example. Note: Only handling interfaces, not classes, means there are less things to consider - there are no protected set methods or fields,
     /// for example.
     /// </summary>
-    public class InterfaceApplierFactory : IInterfaceApplierFactory
+    public class ReflectionInterfaceApplierFactory : IInterfaceApplierFactory
     {
         // ================================================================================================================================
         // CLASS INITIALISATION
         // ================================================================================================================================
-        private string _assemblyName;
         private bool _createComVisibleClasses;
 		private DelayedExecutor<ModuleBuilder> _moduleBuilder;
-        public InterfaceApplierFactory(string assemblyName, ComVisibility comVisibilityOfClasses)
+        public ReflectionInterfaceApplierFactory(string assemblyName, ComVisibilityOptions comVisibilityOfClasses)
         {
             assemblyName = (assemblyName ?? "").Trim();
             if (assemblyName == "")
                 throw new ArgumentException("Null or empty assemblyName specified");
-            if (!Enum.IsDefined(typeof(ComVisibility), comVisibilityOfClasses))
+            if (!Enum.IsDefined(typeof(ComVisibilityOptions), comVisibilityOfClasses))
                 throw new ArgumentOutOfRangeException("comVisibilityOfClasses");
             
-            _assemblyName = assemblyName;
-            _createComVisibleClasses = (comVisibilityOfClasses == ComVisibility.Visible);
+            _createComVisibleClasses = (comVisibilityOfClasses == ComVisibilityOptions.Visible);
 			_moduleBuilder = new DelayedExecutor<ModuleBuilder>(
                 () =>
                 {
                     var assemblyBuilder = Thread.GetDomain().DefineDynamicAssembly(
-                        new AssemblyName(_assemblyName),
+                        new AssemblyName(assemblyName),
                         AssemblyBuilderAccess.Run
                     );
                     return assemblyBuilder.DefineDynamicModule(
@@ -50,13 +48,7 @@ namespace COMInteraction.InterfaceApplication
             );
         }
 
-        public enum ComVisibility
-        {
-            Visible,
-            NotVisible
-        }
-
-        // ================================================================================================================================
+		// ================================================================================================================================
         // IInterfaceApplierFactory IMPLEMENTATION
         // ================================================================================================================================
         /// <summary>
@@ -83,7 +75,7 @@ namespace COMInteraction.InterfaceApplication
             if (readValueConverter == null)
                 throw new ArgumentNullException("readValueConverter");
 
-            var typeName = "InterfaceApplier" + Guid.NewGuid().ToString("N");
+			var typeName = "ReflectionInterfaceApplier" + Guid.NewGuid().ToString("N");
             var typeBuilder = _moduleBuilder.Value.DefineType(
                 typeName,
                 TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout,

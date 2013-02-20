@@ -14,9 +14,9 @@ namespace UnitTests.InterfaceApplication.ReadValueConverters
         [Fact]
         public void RecursiveInterfacesDoNoCauseStackOverflow()
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory(
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory(
                 "DynamicAssembly",
-                InterfaceApplierFactory.ComVisibility.Visible
+                ComVisibilityOptions.Visible
             );
 
             var n1 = new Node() { Name = "Node1" };

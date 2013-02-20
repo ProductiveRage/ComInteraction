@@ -11,9 +11,9 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            var interfaceApplierFactory = new InterfaceApplierFactory(
+            var interfaceApplierFactory = new ReflectionInterfaceApplierFactory(
                 "DynamicAssembly",
-                InterfaceApplierFactory.ComVisibility.Visible
+                ComVisibilityOptions.Visible
             );
 
             var interfaceApplier = interfaceApplierFactory.GenerateInterfaceApplier<IControl>(
