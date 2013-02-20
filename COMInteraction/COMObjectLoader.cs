@@ -10,7 +10,7 @@ namespace COMInteraction
         /// </summary>
         public object LoadFromProgId(string progId)
         {
-            if (string.IsNullOrWhiteSpace(progId))
+            if ((progId ?? "").Trim() == "")
                 throw new ArgumentException("Null or empty progId specified");
             return Activator.CreateInstance(
                 Type.GetTypeFromProgID(progId, true) // Pass true for throwOnError
@@ -22,7 +22,7 @@ namespace COMInteraction
         /// </summary>
         public object LoadFromScriptFile(string filename)
         {
-            if (string.IsNullOrWhiteSpace(filename))
+			if ((filename ?? "").Trim() == "")
                 throw new ArgumentException("Null or empty filename specified");
             return Interaction.GetObject("script:" + filename, null);
         }
