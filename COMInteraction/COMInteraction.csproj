@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="COMObjectLoader.cs" />
+    <Compile Include="InterfaceApplication\CachingInterfaceApplierFactory.cs" />
     <Compile Include="InterfaceApplication\CombinedInterfaceApplierFactory.cs" />
     <Compile Include="InterfaceApplication\ComVisibilityOptions.cs" />
     <Compile Include="InterfaceApplication\IDispatchInterfaceApplierFactory.cs" />
