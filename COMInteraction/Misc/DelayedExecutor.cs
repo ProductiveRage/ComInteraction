@@ -36,7 +36,7 @@ namespace COMInteraction.Misc
 							}
 							catch(Exception e)
 							{
-								_result = Result.Failulre(e);
+								_result = Result.Failure(e);
 							}
 						}
 					}
@@ -53,16 +53,16 @@ namespace COMInteraction.Misc
 			{
 				return new Result(value, null);
 			}
-			public static Result Failulre(Exception error)
+			public static Result Failure(Exception error)
 			{
 				if (error == null)
 					throw new ArgumentNullException("error");
-
 				return new Result(null, error);
 			}
 			private Result(T value, Exception error)
 			{
 				Value = value;
+				Error = error;
 			}
 
 			public T Value { get; private set; }
